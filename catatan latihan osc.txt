@@ -157,3 +157,32 @@ pastikan sudah mengkonfigurasi dns dan web
 </VirtualHost>
 
 #systemctl resatart httpd
+
+
+
+
+
+DEBIAN 12
+. ssh permit root login port 2023
+. dhcp server
+. dns server
+. web server
+. file sharing
+. ftp server
+
+
+. ftp
+#apt install vsftpd
+#nano /etc/vsftpd.conf
+anonymous_enable=YES
+local_enable=YES
+write_enable=YES
+anon_upload_enable=YES
+anon_mkdir_write_enable=YES
+
+# Set the directory where anonymous users will have access (change it to your desired directory):
+anon_root=/srv/ftp
+
+#mkdir -p /srv/ftp
+#chown nobody:nogroup /srv/ftp
+#systemctl restart vsftpd

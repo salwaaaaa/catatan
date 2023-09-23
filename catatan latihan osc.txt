@@ -1,0 +1,159 @@
+redhat
+
+. ssh permit root login port 2023
+. dhcp server
+. dns server
+. web server
+. file sharing
+. ftp server
+
+
+. ssh permit root login port 2023
+#dnf install openssh-server
+#nano /etc/ssh/sshd_config
+~uncomment~
+port 2023
+permitRootlogin yes
+
+#nano /usr/sbin/sshd
+#ausearch -c 'sshd' --raw | grep 2023
+#ausearch -c 'sshd' --raw | audit2allow -M my-sshd
+#semodule -i my-sshd.pp
+#systemctl restart sshd
+# ssh -p 2023 root@ipserver
+
+. dhcp server
+#yum install dhcp-server
+#nano /etc/dhcp/dhcpd.conf
+subnet 172.16.1.0 netmask 255.255.255.0 {
+  range 172.16.1.10 172.1.16.153
+  option domain-name-servers 172.16.1.10
+}
+#systemctl restart dhcpd
+
+. dns server
+#yum install bind
+#nano /etc/named.conf
+options {
+    listen-on port 53 { 172.16.1.10; };
+    directory "/var/named";
+    allow-query { localhost; 172.16.1.0/24 }
+};
+
+zone "example.com" {
+    type master;
+    file "/var/named/db.osc";
+    allow-query { any; }
+};
+
+zone "1.16.172.in-addr.arpa" {
+    type master;
+    file "/var/named/db.172";
+    allow-query { any; }
+};
+
+
+#nano /var/named/db.osc
+$TTL 86400      ; 1 day
+@ IN SOA ns1.example.com. admin.example.com. (
+    2023092201  ; serial number
+    3600        ; refresh (1 hour)
+    1800        ; retry (30 minutes)
+    604800      ; expire (1 week)
+    86400       ; minimum (1 day)
+)
+
+; Name servers
+@ IN NS ns1.example.com.
+@ IN NS ns2.example.com.
+
+; DNS records
+ns1 IN A 192.168.0.1
+ns2 IN A 192.168.0.2
+www IN A 192.168.0.3
+mail IN A 192.168.0.4
+
+#nano /var/named/db.172
+$TTL 86400
+@       IN      SOA     ns1.example.com. admin.example.com. (
+                        2023092301 ; Serial
+                        86400      ; Refresh
+                        7200       ; Retry
+                        3600000    ; Expire
+                        86400 )    ; Minimum TTL
+
+        IN      NS      ns1.example.com.
+
+10       IN      PTR     host1.example.com.
+11       IN      PTR     host2.example.com.
+
+#systemctl restart named
+#firewall-cmd --add-service=dns
+#firewall-cmd --reload
+
+
+. web server
+#yum install httpd
+#nano /etc/httpd/conf.d/osc.cof
+<VirtualHost *:80>
+ServerName www.osc.id
+DocumentRoot /var/www
+</VirtualHost>
+
+#nano /var/www/index.html
+<h1>haloo</h1>
+
+#systecmctl restart httpd
+
+
+
+. file sharing
+#yum install samba
+#nano /etc/samba/smb.conf
+#mkdir /share
+#[share]
+   path = share
+   valid users = username
+   read only = no
+   browseable = yes
+
+#smbpasswd -a username
+#systemctl start smb
+#systemctl enable smb
+
+
+. ftp server
+#yum install vsftp
+#nano /etc/vsftp/vsftp.conf
+anonymous_enable=YES
+local_enable=YES
+write_enable=YES
+#systemctl start vsftpd
+#systemctl enable vsftpd
+
+
+
+. database
+#yum install mysql-server
+#systemctl start mysqld
+#systemctl enable mysqld
+#mysql -u root -p
+
+CREATE DATABASE mydb;
+CREATE USER 'myuser'@'localhost' IDENTIFIED BY 'mypassword';
+GRANT ALL PRIVILEGES ON mydb.* TO 'myuser'@'localhost';
+FLUSH PRIVILEGES;
+
+
+. wordpress
+pastikan sudah mengkonfigurasi dns dan web
+#cd /var/www/
+#wget https://id.wordpress.org/latest-id_ID.tar.gz
+#tar -zxvf latest-id_ID.tar.gz
+#nano /etc/httpd/conf.d/wordpress.com
+<VirtualHost *:80>
+	ServerName osc.id
+	DocumentRoot /var/www/wordpress
+</VirtualHost>
+
+#systemctl resatart httpd

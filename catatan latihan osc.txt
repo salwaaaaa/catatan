@@ -1,4 +1,5 @@
 redhat
+repository = https://www.cyberciti.biz/faq/install-epel-repo-on-an-rhel-8-x/
 
 . ssh permit root login port 2023
 . dhcp server

@@ -187,3 +187,27 @@ anon_root=/srv/ftp
 #mkdir -p /srv/ftp
 #chown nobody:nogroup /srv/ftp
 #systemctl restart vsftpd
+
+
+bind9 on debian 12
+file zone
+zone "1.168.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/db.1.168.192.in-addr.arpa";
+};
+
+file revers
+;
+; Reverse DNS zone file for 192.168.1.0/24 subnet
+;
+$TTL    86400
+@       IN      SOA     ns1.example.com. admin.example.com. (
+                2023092301   ; Serial
+                86400         ; Refresh
+                7200          ; Retry
+                3600000       ; Expire
+                86400 )       ; Negative Cache TTL
+
+@       IN      NS      ns1.example.com.
+1       IN      PTR     host1.example.com.
+2       IN      PTR     host2.example.com.
